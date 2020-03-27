@@ -28,16 +28,15 @@ class VerificationController extends Controller
     public function verify(Request $request, User $user)
     {
         //check if the url is a valid signed url
-        if(! URL::hasValidSignature($request))
-        {
-            return response()->json(["errors"=>[
+        if (!URL::hasValidSignature($request)) {
+            return response()->json(["errors" => [
                 "message" => "Verificación de link invalido"
             ]], 422);
         }
 
         // check if the user has alredy verified account
-        if($user->hasVerifiedEmail()){
-            return response()->json(["errors"=>[
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(["errors" => [
                 "message" => "Email ya ha sido verificado"
             ]], 422);
         }
@@ -46,13 +45,34 @@ class VerificationController extends Controller
 
         event(new Verified($user));
 
-        return response()->json(["errorrs"=>[
+        return response()->json(["errorrs" => [
             "message" => "Email verificado satisfactoriamente"
-        ]],200);
+        ]], 200);
     }
 
     public function resend(Request $request)
     {
+        $this->validate($request, [
+            'email' => ['email', 'required']
+        ]);
 
+        $user = User::where('email', $request->email)->first();
+
+        // check if the user has alredy verified account
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(["errors" => [
+                "message" => "Email ya ha sido verificado"
+            ]], 422);
+        }
+
+        if (!$user) {
+            return response()->json(["errors" => [
+                "email" => "No se ha encontrado un usuario con este email"
+            ]], 422);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return response()->json(['status'  => "Link de verificación reenviada"]);
     }
 }
