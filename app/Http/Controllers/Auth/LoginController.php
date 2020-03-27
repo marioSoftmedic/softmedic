@@ -16,7 +16,7 @@ class LoginController extends Controller
 
     public function attemptLogin(Request $request)
     {
-        //attempt to ussue a token to the user based on the login credentials
+        //attempt to issue a token to the user based on the login credentials
         $token = $this->guard()->attempt($this->credentials($request));
 
         if (!$token) {
@@ -41,7 +41,7 @@ class LoginController extends Controller
         $this->clearLoginAttempts($request);
 
         //get the token from the authentication guard (JWT)
-        $token = (string) $this->guard()->getToken();
+        $token = (string)$this->guard()->getToken();
 
         //extract the expiry date of the token
         $expiration = $this->guard()->getPayload()->get('exp');
@@ -63,10 +63,15 @@ class LoginController extends Controller
                     "verification" => "Necesitas verificar tu cuenta de email"
                 ]
             ]);
-
-            throw ValidationException::withMessages([
-                $this->username()=>"Fallo la autenticación"
-            ]);
         }
+        throw ValidationException::withMessages([
+            $this->username()=>"Fallo la autenticación"
+        ]);
+    }
+
+    public function logout(){
+        $this->guard()->logout();
+
+        return response()->json(['message' => 'Logout satisfactorio']);
     }
 }
