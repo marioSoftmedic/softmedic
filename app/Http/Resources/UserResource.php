@@ -23,7 +23,7 @@ class UserResource extends JsonResource
                 "created_at_human" => $this->created_at->diffForHumans(),
                 "created_at" => $this->created_at
             ],
-            "formatted_address" => $this->formatted_address,
+            'formatted_address' => $this->formatted_address,
             "tagline" => $this->tagline,
             "about" => $this->about,
             "location" => $this->location,
