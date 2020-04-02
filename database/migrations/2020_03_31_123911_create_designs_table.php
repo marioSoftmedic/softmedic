@@ -22,7 +22,6 @@ class CreateDesignsTable extends Migration
             $table->string('slug')->nullable();
             $table->boolean('is_live')->default(false);
             $table->timestamps();
-
             $table->foreign('user_id')->references('id')->on('users');
         });
     }
