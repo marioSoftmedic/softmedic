@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-
 use Image;
 use File;
 use App\Models\Design;
@@ -25,8 +24,7 @@ class UploadImage implements ShouldQueue
      */
     public function __construct(Design $design)
     {
-        $this->design=$design;
-
+        $this->design = $design;
     }
 
     /**
@@ -36,21 +34,20 @@ class UploadImage implements ShouldQueue
      */
     public function handle()
     {
-
-        $disk = $this->design->disk;
-        $filename = $this->design->image;
+        $disk          = $this->design->disk;
+        $filename      = $this->design->image;
         $original_file = storage_path() . '/uploads/original/'. $filename;
 
         try{
             // create the Large Image and save to tmp disk
-            Image::make($original_file)
+            Image:: make($original_file)
                 ->fit(800, 600, function($constraint){
                     $constraint->aspectRatio();
                 })
                 ->save($large = storage_path('uploads/large/'. $filename));
 
             // Create the thumbnail image
-            Image::make($original_file)
+            Image:: make($original_file)
                 ->fit(250, 200, function($constraint){
                     $constraint->aspectRatio();
                 })
@@ -58,6 +55,8 @@ class UploadImage implements ShouldQueue
 
             // store images to permanent disk
             // original image
+
+
             if(Storage::disk($disk)
                 ->put('uploads/designs/original/'.$filename, fopen($original_file, 'r+'))){
                     File::delete($original_file);
@@ -80,10 +79,9 @@ class UploadImage implements ShouldQueue
                 'upload_successful' => true
             ]);
 
-
-        }catch(\Exception $e)
-        {
+        } catch(\Exception $e){
             \Log::error($e->getMessage());
         }
+
     }
 }
