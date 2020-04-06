@@ -4,6 +4,12 @@
 //Public routes
 Route::get('me', 'User\MeController@getme');
 
+//Get designs
+Route::get('designs', 'Designs\DesignController@index');
+
+//Get Users
+
+Route::get('users', 'User\UserController@index');
 
 //Route group for authenticated users only
 Route::group(['middleware'=>['auth:api']], function(){
