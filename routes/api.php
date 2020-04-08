@@ -6,6 +6,7 @@ Route::get('me', 'User\MeController@getme');
 
 //Get designs
 Route::get('designs', 'Designs\DesignController@index');
+Route::get('designs/{id}', 'Designs\DesignController@findDesign');
 
 //Get Users
 

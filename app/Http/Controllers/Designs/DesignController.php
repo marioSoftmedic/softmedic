@@ -9,7 +9,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\DesignResource;
 use App\Repositories\Contracts\IDesign;
 use Illuminate\Support\Facades\Storage;
-
+use App\Repositories\Eloquent\Criteria\{
+    ForUser,
+    LatestFirst,
+    isLive,
+};
 class DesignController extends Controller
 {
 
@@ -21,14 +25,26 @@ class DesignController extends Controller
     }
     public function index()
     {
-        $designs = $this->designs->all();
+        $designs = $this->designs->withCriteria(
+            new LatestFirst(),
+            new isLive(),
+            new ForUser(1)
+        )->all();
 
         return DesignResource::collection($designs);
     }
 
+    public function findDesign($id)
+    {
+        $design =$this->designs->find($id);
+
+        return new DesignResource($design);
+    }
+
     public function update(Request $request, $id)
     {
-        $design = Design::findOrFail($id);
+        // $design = Design::findOrFail($id);
+        $design = $this->designs->find($id);
 
         $this->authorize('update', $design);
 
@@ -39,7 +55,7 @@ class DesignController extends Controller
         ]);
 
 
-        $design->update([
+       $design = $this->designs->update($id, [
             'title'       => $request->title,
             'description' => $request->description,
             'slug'        => Str::slug($request->title),
@@ -47,7 +63,8 @@ class DesignController extends Controller
         ]);
 
         //apply the tags
-        $design->retag($request->tags);
+        // $design->retag($request->tags);
+        $this->designs->applyTags($id, $request->tags);
 
         return new DesignResource($design);
 
@@ -55,7 +72,9 @@ class DesignController extends Controller
 
     public function destroy($id)
     {
-        $design = Design::findOrFail($id);
+        // $design = Design::findOrFail($id);
+        $design = $this->designs->find($id);
+
         $this->authorize('delete', $design);
 
 
@@ -70,7 +89,8 @@ class DesignController extends Controller
             }
         }
 
-        $design->delete();
+        // $design->delete();
+        $this->desings->delete();
 
         return response()->json([
             "message" => "Recurso eliminado"
