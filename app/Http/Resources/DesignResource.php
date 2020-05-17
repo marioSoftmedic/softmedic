@@ -15,14 +15,14 @@ class DesignResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'               => $this->id,
-            'user'             => new UserResource($this->user),
-            'title'            => $this->title,
-            'slug'             => $this->slug,
-            'images'           => $this->images,
-            'is_live'          => $this->is_live,
-            'description'      => $this->description,
-            'tag_list'=>[
+            'id'          => $this->id,
+            'title'       => $this->title,
+            'slug'        => $this->slug,
+            'images'      => $this->images,
+            'is_live'     => $this->is_live,
+            'likes_count' => $this->likes()->count(),
+            'description' => $this->description,
+            'tag_list'    => [
                 'tags'       => $this->tagArray,
                 'normalized' => $this->tagArrayNormalized,
             ],
@@ -33,7 +33,9 @@ class DesignResource extends JsonResource
             'updated_at_dates' => [
                 'updated_at_human' => $this->updated_at->diffForHumans(),
                 'updated_at'       => $this->updated_at
-            ]
+            ],
+            'comments' => CommentResource::collection($this->whenLoaded('comments')),
+            'user'     => new UserResource($this->whenLoaded('user'))
         ];
     }
 }

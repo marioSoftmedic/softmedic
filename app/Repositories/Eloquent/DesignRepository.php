@@ -8,7 +8,6 @@ use App\Repositories\Eloquent\BaseRepository;
 
 class DesignRepository extends BaseRepository implements IDesign
 {
-
     public function model()
     {
         return Design:: class;  //App\Models\Design
@@ -20,8 +19,31 @@ class DesignRepository extends BaseRepository implements IDesign
         $design->retag($data);
     }
 
-    public function allLive()
+    public function addComment($designId, array $data)
     {
-        return $this->model->where('is_live', true)->get();
+        //get the design for which we want to create a comment
+        $design = $this->find($designId);
+
+        //create a comment for the design
+        $comment = $design->comments()->create($data);
+
+        return $comment;
+    }
+
+    public function like($id)
+    {
+        $design = $this->model->findOrFail($id);
+        if ($design->isLikedByUser(auth()->id())) {
+            $design->unLike();
+        } else {
+            $design->like();
+        }
+    }
+
+    public function isLikedByUser($designId)
+    {
+        $design = $this->model->findOrFail($designId);
+
+        return $design->isLikedByUser(auth()->id());
     }
 }

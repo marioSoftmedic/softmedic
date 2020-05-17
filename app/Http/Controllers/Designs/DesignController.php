@@ -9,14 +9,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\DesignResource;
 use App\Repositories\Contracts\IDesign;
 use Illuminate\Support\Facades\Storage;
-use App\Repositories\Eloquent\Criteria\{
-    ForUser,
-    LatestFirst,
-    isLive,
-};
+use App\Repositories\Eloquent\Criteria\EagerLoad;
+use App\Repositories\Eloquent\Criteria\ForUser;
+use App\Repositories\Eloquent\Criteria\LatestFirst;
+use App\Repositories\Eloquent\Criteria\isLive;
+
 class DesignController extends Controller
 {
-
     protected $designs;
 
     public function __construct(IDesign $designs)
@@ -28,7 +27,11 @@ class DesignController extends Controller
         $designs = $this->designs->withCriteria(
             new LatestFirst(),
             new isLive(),
-            new ForUser(1)
+            new ForUser(1),
+            new EagerLoad([
+                'user',
+                'comments'
+            ])
         )->all();
 
         return DesignResource::collection($designs);
@@ -55,7 +58,7 @@ class DesignController extends Controller
         ]);
 
 
-       $design = $this->designs->update($id, [
+        $design = $this->designs->update($id, [
             'title'       => $request->title,
             'description' => $request->description,
             'slug'        => Str::slug($request->title),
@@ -67,7 +70,6 @@ class DesignController extends Controller
         $this->designs->applyTags($id, $request->tags);
 
         return new DesignResource($design);
-
     }
 
     public function destroy($id)
@@ -77,24 +79,37 @@ class DesignController extends Controller
 
         $this->authorize('delete', $design);
 
-
-
         //delete the files asociated to the record
-        foreach(['thumbnail', 'large', 'original'] as $size)
-        {
+        foreach (['thumbnail', 'large', 'original'] as $size) {
             //check if the file exits
-            if(Storage::disk($design->disk)->exists("uploads/designs/{$size}/".$design->image))
-            {
+            if (Storage::disk($design->disk)->exists("uploads/designs/{$size}/".$design->image)) {
                 Storage::disk($design->disk)->delete("uploads/designs/{$size}/".$design->image);
             }
         }
 
         // $design->delete();
-        $this->desings->delete();
+        $this->designs->delete($id);
 
         return response()->json([
             "message" => "Recurso eliminado"
         ], 200);
+    }
 
+    public function like($id)
+    {
+        $this->designs->like($id);
+
+        return response()->json([
+            'message' => 'Successfull'
+        ], 200);
+    }
+
+    public function checkIfUserAsLiked($designId)
+    {
+        $isLiked= $this->designs->isLikedByUser($designId);
+
+        return response()->json([
+            'liked' => $isLiked
+        ], 200);
     }
 }
