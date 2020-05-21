@@ -13,6 +13,7 @@ class Design extends Model
 
     protected $fillable = [
         'user_id',
+        'team_id',
         'image',
         'title',
         'description',
@@ -20,7 +21,7 @@ class Design extends Model
         'close_to_comment',
         'is_live',
         'upload_successful',
-        'disk'
+        'disk',
     ];
 
 
@@ -41,6 +42,11 @@ class Design extends Model
             'large'     => $this->getImagePath('large'),
             'original'  => $this->getImagePath('original'),
         ];
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
     }
 
     protected function getImagePath($size)

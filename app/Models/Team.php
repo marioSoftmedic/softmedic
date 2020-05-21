@@ -12,6 +12,20 @@ class Team extends Model
         'slug'
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        //when team is created, add current user as a team member
+        static::created(function ($team) {
+            // auth()->user()->teams()->attach($team->id);
+            $team->members()->attach(auth()->id());
+        });
+
+        static::deleting(function ($team) {
+            $team->members()->sync([]);
+        });
+    }
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id');
@@ -32,5 +46,15 @@ class Team extends Model
         return $this->members()
                             ->where('user_id', $user->id)
                             ->first() ? true:false;
+    }
+
+    public function invitation()
+    {
+        return $this->hasMany(Invitation::class);
+    }
+
+    public function hasPendingInvite($email)
+    {
+        return (bool)$this->invitations()->where('recipient_email', $email)->count();
     }
 }

@@ -12,6 +12,9 @@ Route::get('designs/{id}', 'Designs\DesignController@findDesign');
 
 Route::get('users', 'User\UserController@index');
 
+Route::get('teams/slug/{slug}', 'Teams\TeamsController@findBySlug');
+
+
 //Route group for authenticated users only
 Route::group(['middleware'=>['auth:api']], function () {
     Route::post('logout', 'Auth\LoginController@logout');
@@ -31,6 +34,20 @@ Route::group(['middleware'=>['auth:api']], function () {
     //Likes and Unlikes
     Route::post('designs/{id}/like', 'Designs\DesignController@like');
     Route::get('designs/{id}/liked', 'Designs\DesignController@checkIfUserAsLiked');
+
+    //Teams
+    Route::post('teams', 'Teams\TeamsController@store');
+    Route::get('teams/{id}', 'Teams\TeamsController@findById');
+    Route::get('teams', 'Teams\TeamsController@index');
+    Route::get('users/teams', 'Teams\TeamsController@fetchUserTeams');
+    Route::put('teams/{id}', 'Teams\TeamsController@update');
+    Route::delete('teams/{id}', 'Teams\TeamsController@destroy');
+
+    //Invitations
+    Route::post('invitations/{teamId}', 'Teams\InvitationsController@invite');
+    Route::post('invitations/{id}/resend', 'Teams\InvitationsController@resend');
+    Route::post('invitations/{id}/respond', 'Teams\InvitationsController@respond');
+    Route::delete('invitations/{id}', 'Teams\InvitationsController@destroy');
 });
 
 
